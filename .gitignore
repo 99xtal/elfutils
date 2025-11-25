@@ -1,0 +1,6 @@
+# Puzzle inputs
+/inputs
+*.txt
+
+# Compiled binaries
+/bin
