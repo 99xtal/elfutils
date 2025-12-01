@@ -4,9 +4,10 @@ LDFLAGS	:=
 SRC_DIR := src
 BIN_DIR := bin
 
-PROGRAMS := locdiff
+PROGRAMS := locdiff safecode
 
 locdiff_SRC := $(SRC_DIR)/locdiff.c
+safecode_SRC := $(SRC_DIR)/safecode.c
 
 BINS := $(addprefix $(BIN_DIR)/, $(PROGRAMS))
 
