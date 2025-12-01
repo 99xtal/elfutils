@@ -134,48 +134,23 @@ long solve_secure(FILE *input) {
         int turn = turns[i];
         next_pos = curr_pos + turn;
 
-        if (next_pos >= 100) {
-            while (next_pos >= 100) {
-                next_pos -= 100;
-                zero_cnt++;
-            }
-
-            if (next_pos == 0) zero_cnt++;
-        } else if (next_pos < 0) {
+        if (next_pos < 0) {
             while (next_pos < 0) {
                 next_pos += 100;
                 zero_cnt++;
             }
 
-            if (curr_pos == 0) zero_cnt--;
             if (next_pos == 0) zero_cnt++;
+        } else if (next_pos >= 100) {
+            while (next_pos >= 100) {
+                next_pos -= 100;
+                zero_cnt++;
+            }
         } else if (next_pos == 0) {
             zero_cnt++;
         }
 
         curr_pos = next_pos;
-
-        // if (next_pos >= 100) {
-        //     if (curr_pos == 0) zero_cnt--;
-            
-        //     while (next_pos >= 100) {
-        //         next_pos -= 100;
-        //         if (next_pos != 0) zero_cnt++;
-        //     }
-        // } else if (next_pos < 0) {
-        //     if (curr_pos == 0) zero_cnt--;
-
-        //     while (next_pos < 0) {
-        //         next_pos += 100;
-        //         if (next_pos != 0) zero_cnt++;
-        //     }
-        // }
-        
-        // if (next_pos == 0) {
-        //     zero_cnt++;
-        // }
-
-        // curr_pos = next_pos;
 
         printf("Turn: %d, Next Pos: %ld, Zeros: %ld\n", turns[i], curr_pos, zero_cnt);
     }
