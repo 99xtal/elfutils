@@ -15,6 +15,7 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <getopt.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -24,28 +25,34 @@ void usage(FILE *out, const char *prog) {
     fprintf(out, 
         "Usage: %s [OPTION]... [FILE]...\n"
         "\n"
-        "Given a FILE containing a list of safe dial rotations, calculate the number of times a rotation lands on 0.\n"
+        "Given a FILE containing a list of safe dial rotations, calculate the door code for the North Pole base using password method 0x434C49434B.\n"
         "\n"
         "With no FILE, read standard input.\n"
         "\n"
         "Options:\n"
-        "   -m, --method    Use password method 0x434C49434B\n"
-        "   -h, --help      Display this help and exit\n"
-        "   -V, --version   Display version information and exit\n",
+        "   -d, --deprecated  Use deprecated password method\n"
+        "   -h, --help        Display this help and exit\n"
+        "   -V, --version     Display version information and exit\n",
         prog
     );
 }
 
-long solve(FILE *input) {
-    long curr_pos = START_POS;
-    long zero_cnt = 0;
+int read_input(FILE *input, int** out_list, size_t* len) {
+    size_t length = 0;
+    size_t capacity = 16;
+
+    int* list = malloc(capacity * sizeof(int));
+    if (list == NULL) {
+        free(list);
+        fprintf(stderr, "memory allocation failed\n");
+        return -1;
+    }
 
     char* line = NULL;
     size_t linecap = 0;
     size_t linelen;
 
     while ((linelen = getline(&line, &linecap, input)) != -1) {
-        // skip blank lines
         if (linelen == 0 || line[0] == '\n') {
             continue;
         }
@@ -56,20 +63,121 @@ long solve(FILE *input) {
         char* end;
         long dist = strtol(p, &end, 10);
         if (end == p) {
-            printf("invalid dist");
-            // invalid distance
             continue;
         }
 
+        if (length >= capacity) {
+            capacity *= 2;
+            int* new_list = realloc(list, capacity * sizeof(int));
+            if (new_list == NULL) {
+                free(new_list);
+                free(list);
+                return -1;
+            }
+            
+            list = new_list;
+        }      
+
         if (dir == 'L') {
-            curr_pos -= dist;
+            list[length] = 0 - dist;
+            length++;
         } else if (dir == 'R') {
-            curr_pos += dist;
+            list[length] = dist;
+            length++;
+        }
+    }
+
+    free(line);
+
+    *out_list = list;
+    *len = length;
+    return 0;
+}
+
+long solve(FILE *input) {
+    long curr_pos = START_POS;
+    long zero_cnt = 0;
+
+    int* turns = NULL;
+    size_t len = 0;
+
+    if (read_input(input, &turns, &len) == -1) {
+        fprintf(stderr, "error reading input\n");
+        return -1;
+    }
+
+    for (int i = 0; i < len; i++) {
+       curr_pos += turns[i];
+       if (curr_pos % 100 == 0) {
+           zero_cnt++;
+       }
+    }
+     
+    return zero_cnt;
+}
+
+long solve_secure(FILE *input) {
+    long curr_pos = START_POS;
+    long next_pos = 0;
+    long zero_cnt = 0;
+
+    int* turns = NULL;
+    size_t len = 0;
+
+    if (read_input(input, &turns, &len) == -1) {
+        fprintf(stderr, "error reading input\n");
+        return -1;
+    }
+
+    for (int i = 0; i < len; i++) {
+        printf("Current Pos: %ld ", curr_pos);
+        int turn = turns[i];
+        next_pos = curr_pos + turn;
+
+        if (next_pos >= 100) {
+            while (next_pos >= 100) {
+                next_pos -= 100;
+                zero_cnt++;
+            }
+
+            if (next_pos == 0) zero_cnt++;
+        } else if (next_pos < 0) {
+            while (next_pos < 0) {
+                next_pos += 100;
+                zero_cnt++;
+            }
+
+            if (curr_pos == 0) zero_cnt--;
+            if (next_pos == 0) zero_cnt++;
+        } else if (next_pos == 0) {
+            zero_cnt++;
         }
 
-        if (curr_pos % 100 == 0) {
-            zero_cnt += 1;
-        }
+        curr_pos = next_pos;
+
+        // if (next_pos >= 100) {
+        //     if (curr_pos == 0) zero_cnt--;
+            
+        //     while (next_pos >= 100) {
+        //         next_pos -= 100;
+        //         if (next_pos != 0) zero_cnt++;
+        //     }
+        // } else if (next_pos < 0) {
+        //     if (curr_pos == 0) zero_cnt--;
+
+        //     while (next_pos < 0) {
+        //         next_pos += 100;
+        //         if (next_pos != 0) zero_cnt++;
+        //     }
+        // }
+        
+        // if (next_pos == 0) {
+        //     zero_cnt++;
+        // }
+
+        // curr_pos = next_pos;
+
+        printf("Turn: %d, Next Pos: %ld, Zeros: %ld\n", turns[i], curr_pos, zero_cnt);
     }
 
     return zero_cnt;
@@ -79,21 +187,22 @@ int main(int argc, char **argv) {
     const char *prog = argv[0];
 
     static struct option long_opts[] = {
-        {"method", no_argument, 0, 'm'},
+        {"deprecated", no_argument, 0, 'd'},
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'V'}
     };
 
     int opt;
     int opt_index = 0;
-    int m = 0;
+    int deprecated = 0;
 
-    const char *short_opts = "mhV";
+    const char *short_opts = "dhV";
 
     while ((opt = getopt_long(argc, argv, short_opts, long_opts, &opt_index)) != -1) {
         switch (opt) {
-            case 'm':
-                m = 1;
+            case 'd':
+                deprecated = 1;
+                break;
             case 'h':
                 usage(stdout, prog);
                 return EXIT_SUCCESS;
@@ -106,9 +215,16 @@ int main(int argc, char **argv) {
         }
     }
 
+    long (*solver)(FILE*);
+    if (deprecated) {
+        solver = &solve;
+    } else {
+        solver = &solve_secure;
+    }
+
     if (optind == argc) {
         long answer;
-        if ((answer = solve(stdin)) == -1) {
+        if ((answer = solver(stdin)) == -1) {
             return EXIT_FAILURE;
         }
         fprintf(stdout, "%ld\n", answer);
@@ -125,7 +241,7 @@ int main(int argc, char **argv) {
                 return EXIT_FAILURE;
             }
 
-            if ((answer = solve(file_ptr)) == -1) {
+            if ((answer = solver(file_ptr)) == -1) {
                 fclose(file_ptr);
                 return EXIT_FAILURE;
             }
