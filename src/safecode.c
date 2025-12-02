@@ -1,4 +1,4 @@
-/* safecode -- [AOC 2025 Day 1 (Part 1)] Calculate total distance between two lists of location IDs
+/* safecode -- [AOC 2025 Day 1 (Part 1)] Calculate the door code for the North Pole base using safe dial rotations.
    Copyright (C) 2025 99xtal
 
    This program is free software: you can redistribute it and/or modify
