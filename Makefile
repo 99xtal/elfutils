@@ -4,16 +4,19 @@ LDFLAGS	:=
 SRC_DIR := src
 BIN_DIR := bin
 
-PROGRAMS := locdiff prodval safecode
+PROGRAMS := locdiff prodeval safecode
 
 locdiff_SRC := $(SRC_DIR)/locdiff.c
-prodval_SRC := $(SRC_DIR)/prodval.c
+prodeval_SRC := $(SRC_DIR)/prodeval.c
 safecode_SRC := $(SRC_DIR)/safecode.c
 
 BINS := $(addprefix $(BIN_DIR)/, $(PROGRAMS))
 
 .PHONY: all clean
 all: $(BINS)
+
+debug: CFLAGS += -g
+debug: all
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)

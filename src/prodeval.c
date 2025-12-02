@@ -1,4 +1,4 @@
-/* prodval -- [AOC 2025 Day 2] Calculate total distance between two lists of location IDs
+/* prodeval -- [AOC 2025 Day 2] Calculate the total sum of invalid product IDs in a set of ranges.
    Copyright (C) 2025 99xtal
 
    This program is free software: you can redistribute it and/or modify
@@ -26,8 +26,10 @@ void usage(FILE *out, const char *prog) {
         "Calculate the sum of all invalid product IDs in a set of ranges given in FILE.\n"
         "\n"
         "With no FILE, read standard input.\n"
+        "An invalid product ID is defined as one that consists of a sequence of digits repeated any number of times.\n"
         "\n"
         "Options:\n"
+        "   -2, --twice     Check for product IDs repeated exactly twice\n"
         "   -h, --help      Display this help and exit\n"
         "   -V, --version   Display version information and exit\n",
         prog
@@ -42,7 +44,7 @@ int has_n_repeats(char* id, size_t n) {
     for (size_t j = 0; j < n; j++) {
         to_check = id[j];
 
-        // check every n number
+        // check every nth number
         for (size_t i = j; i < length; i += n) {
             if (id[i] != to_check) {
                 return 0;
@@ -95,19 +97,8 @@ int is_repeated_twice(long id) {
     return 1;
 }
 
-long invalid_id_sum(long lower, long upper) {
-    long sum = 0;
-
-    for (long i = lower; i <= upper; i++) {
-        if (is_repeated_at_least_twice(i)) {
-            sum += i;
-        }
-    }
-
-    return sum;
-}
-
-long solve(FILE *input) {
+// process input and calculate total sum of invalid product IDs using validator function
+long solve(FILE *input, int (*validator)(long)) {
     char buffer[1024];
     char* delims = "-,";
     char* token;
@@ -129,7 +120,11 @@ long solve(FILE *input) {
         u_bound = strtol(token, NULL, 10);
 
         // sum invalid ids in this range
-        total_sum += invalid_id_sum(l_bound, u_bound);
+        for (long i = l_bound; i <= u_bound; i++) {
+            if (validator(i)) {
+                total_sum += i;
+            }
+        }
 
         // move on to next range
         token = strtok(NULL, delims);
@@ -142,17 +137,22 @@ int main(int argc, char **argv) {
     const char *prog = argv[0];
 
     static struct option long_opts[] = {
+        {"twice", no_argument, 0, '2'},
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'V'}
     };
 
     int opt;
     int opt_index = 0;
+    int check_twice = 0;
 
-    const char *short_opts = "hV";
+    const char *short_opts = "2hV";
 
     while ((opt = getopt_long(argc, argv, short_opts, long_opts, &opt_index)) != -1) {
         switch (opt) {
+            case '2':
+                check_twice = 1;
+                break;
             case 'h':
                 usage(stdout, prog);
                 return EXIT_SUCCESS;
@@ -164,10 +164,11 @@ int main(int argc, char **argv) {
                 return EXIT_FAILURE;
         }
     }
+    int (*validator)(long) = check_twice ? is_repeated_twice : is_repeated_at_least_twice;
 
     if (optind == argc) {
         long answer;
-        if ((answer = solve(stdin)) == -1) {
+        if ((answer = solve(stdin, validator)) == -1) {
             return EXIT_FAILURE;
         }
         fprintf(stdout, "%ld\n", answer);
@@ -184,7 +185,7 @@ int main(int argc, char **argv) {
                 return EXIT_FAILURE;
             }
 
-            if ((answer = solve(file_ptr)) == -1) {
+            if ((answer = solve(file_ptr, validator)) == -1) {
                 fclose(file_ptr);
                 return EXIT_FAILURE;
             }
