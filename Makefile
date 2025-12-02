@@ -1,12 +1,13 @@
 CC		:= cc
-CFLAGS 	:= -std=c17 -Wall -Wextra -Wpedantic
+CFLAGS 	:= -std=c17 -Wall -Wextra -Wpedantic -g
 LDFLAGS	:=
 SRC_DIR := src
 BIN_DIR := bin
 
-PROGRAMS := locdiff safecode
+PROGRAMS := locdiff prodval safecode
 
 locdiff_SRC := $(SRC_DIR)/locdiff.c
+prodval_SRC := $(SRC_DIR)/prodval.c
 safecode_SRC := $(SRC_DIR)/safecode.c
 
 BINS := $(addprefix $(BIN_DIR)/, $(PROGRAMS))
