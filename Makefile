@@ -1,5 +1,5 @@
 CC		:= cc
-CFLAGS 	:= -std=c17 -Wall -Wextra -Wpedantic -g
+CFLAGS 	:= -std=c17 -Wall -Wextra -Wpedantic -O2
 LDFLAGS	:=
 SRC_DIR := src
 BIN_DIR := bin
@@ -15,7 +15,7 @@ BINS := $(addprefix $(BIN_DIR)/, $(PROGRAMS))
 .PHONY: all clean
 all: $(BINS)
 
-debug: CFLAGS += -g
+debug: CFLAGS := -std=c17 -Wall -Wextra -Wpedantic -g -O0
 debug: all
 
 $(BIN_DIR):
