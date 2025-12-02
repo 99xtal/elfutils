@@ -34,6 +34,44 @@ void usage(FILE *out, const char *prog) {
     );
 }
 
+int has_n_repeats(char* id, size_t n) {
+    size_t length = strlen(id);
+    char to_check;
+
+    // starting with char at index j
+    for (size_t j = 0; j < n; j++) {
+        to_check = id[j];
+
+        // check every n number
+        for (size_t i = j; i < length; i += n) {
+            if (id[i] != to_check) {
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+int is_repeated_at_least_twice(long id) {
+    char num_str[20];
+    // convert number to string
+    sprintf(num_str, "%ld", id);
+
+    size_t length = strlen(num_str);
+
+    for (size_t n = 1; n < length; n++) {
+        // check if n is a factor of length
+        if (length % n == 0) {
+            if (has_n_repeats(num_str, n)) {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
 int is_repeated_twice(long id) {
     char num_str[20];
     // convert number to string
@@ -46,6 +84,7 @@ int is_repeated_twice(long id) {
         return 0;
     }
 
+    // compare both halves of number
     for (size_t i = 0; i < length / 2; i++) {
         size_t j = i + (length / 2);
         if (num_str[i] != num_str[j]) {
@@ -60,7 +99,7 @@ long invalid_id_sum(long lower, long upper) {
     long sum = 0;
 
     for (long i = lower; i <= upper; i++) {
-        if (is_repeated_twice(i)) {
+        if (is_repeated_at_least_twice(i)) {
             sum += i;
         }
     }
@@ -81,6 +120,7 @@ long solve(FILE *input) {
         return -1;
     }
 
+    // split input by "-" and "," characters
     token = strtok(buffer, delims);
     while (token != NULL) {
         // get lower and upper bound from each range
