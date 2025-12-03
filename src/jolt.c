@@ -1,4 +1,4 @@
-/* jolt -- [AOC 2025 Day 1 (Part 1)] Find the largest possible joltage from a set of battery banks.
+/* jolt -- [AOC 2025 Day 3] Find the largest possible joltage from a set of battery banks.
    Copyright (C) 2025 99xtal
 
    This program is free software: you can redistribute it and/or modify
