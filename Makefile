@@ -1,6 +1,6 @@
 CC		:= cc
-CFLAGS 	:= -std=c17 -Wall -Wextra -Wpedantic -O2
-LDFLAGS	:=
+CFLAGS 	:= -std=c17 -Wall -Wextra -Wpedantic
+LDFLAGS	:= -lm
 SRC_DIR := src
 BIN_DIR := bin
 

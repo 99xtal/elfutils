@@ -18,8 +18,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#define START_POS 50;
+#include <string.h>
 
 void usage(FILE *out, const char *prog) {
     fprintf(out,
@@ -30,47 +29,56 @@ void usage(FILE *out, const char *prog) {
         "With no FILE, read standard input.\n"
         "\n"
         "Options:\n"
+        "   -n, --number      Specify number of batteries to turn on in each bank (default: 12)\n"
         "   -h, --help        Display this help and exit\n"
         "   -V, --version     Display version information and exit\n",
         prog
     );
 }
 
-int get_max_joltage(char* bank) {
+long long get_max_joltage(char* bank, int num_batteries) {
+    int battery_pos[num_batteries];
+    size_t bank_len = strlen(bank);
+
+    int curr_battery = 0;
+
     int largest_index = 0;
-    int second_largest_index = 0;
-
-    // find largest number in bank for first battery
     int largest_joltage = 0;
-    for (int i = 0; bank[i + 1] != '\0'; i++) {
-        int joltage = bank[i] - '0';
 
-        if (joltage > largest_joltage) {
-            largest_joltage = joltage;
-            largest_index = i;
+    while (curr_battery < num_batteries) {
+        // next loc after previously selected battery
+        int first_pos_to_check = curr_battery == 0 ? 0 : battery_pos[curr_battery - 1] + 1;
+        int last_pos_to_check = bank_len - num_batteries + curr_battery;
+
+        for (int i = first_pos_to_check; i <= last_pos_to_check; i++) {
+            int joltage = bank[i] - '0';
+
+            if (joltage > largest_joltage) {
+                largest_joltage = joltage;
+                largest_index = i;
+            }
         }
+
+        battery_pos[curr_battery] = largest_index;
+        curr_battery++;
+        largest_joltage = 0;
     }
 
-    // find next largest number starting from first battery
-    largest_joltage = 0;
-    for (int i = largest_index + 1; bank[i] != '\0'; i++) {
-        int joltage = bank[i] - '0';
 
-        if (joltage > largest_joltage) {
-            largest_joltage = joltage;
-            second_largest_index = i;
-        }
+    long long max_joltage = 0;
+    for (int i = 0; i < num_batteries; i++) {
+        max_joltage += (bank[battery_pos[num_batteries - i - 1]] - '0') * pow(10, i);
     }
 
-    return ((bank[largest_index] - '0') * 10) + (bank[second_largest_index] - '0');
+    return max_joltage;
 }
 
-long solve(FILE *input) {
+long long solve(FILE *input, int num_batteries) {
     char* line = NULL;
     size_t linecap = 0;
     int linelen;
 
-    long total_joltage = 0;
+    long long total_joltage = 0;
 
     while ((linelen = getline(&line, &linecap, input)) != -1) {
         if (linelen == 0 || line[0] == '\n') {
@@ -84,7 +92,7 @@ long solve(FILE *input) {
         }
         line[i] = '\0';
 
-        int max_joltage = get_max_joltage(line);
+        long long max_joltage = get_max_joltage(line, num_batteries);
         total_joltage += max_joltage;
     }
 
@@ -97,17 +105,22 @@ int main(int argc, char **argv) {
     const char *prog = argv[0];
 
     static struct option long_opts[] = {
+        {"number", required_argument, 0, 'n'},
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'V'}
     };
 
     int opt;
     int opt_index = 0;
+    int num_batteries = 12;
 
-    const char *short_opts = "hV";
+    const char *short_opts = "n:hV";
 
     while ((opt = getopt_long(argc, argv, short_opts, long_opts, &opt_index)) != -1) {
         switch (opt) {
+            case 'n':
+                num_batteries = atoi(optarg);
+                break;
             case 'h':
                 usage(stdout, prog);
                 return EXIT_SUCCESS;
@@ -121,14 +134,14 @@ int main(int argc, char **argv) {
     }
 
     if (optind == argc) {
-        long answer;
-        if ((answer = solve(stdin)) == -1) {
+        long long answer;
+        if ((answer = solve(stdin, num_batteries)) == -1) {
             return EXIT_FAILURE;
         }
-        fprintf(stdout, "%ld\n", answer);
+        fprintf(stdout, "%lld\n", answer);
     } else {
         FILE *file_ptr;
-        long answer;
+        long long answer;
 
         for (int i = optind; i < argc; i++) {
             const char *filename = argv[i];
@@ -139,12 +152,12 @@ int main(int argc, char **argv) {
                 return EXIT_FAILURE;
             }
 
-            if ((answer = solve(file_ptr)) == -1) {
+            if ((answer = solve(file_ptr, num_batteries)) == -1) {
                 fclose(file_ptr);
                 return EXIT_FAILURE;
             }
 
-            fprintf(stdout, "%ld\n", answer);
+            fprintf(stdout, "%lld\n", answer);
             fclose(file_ptr);
         }
     }
