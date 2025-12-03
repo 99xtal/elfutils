@@ -4,8 +4,9 @@ LDFLAGS	:=
 SRC_DIR := src
 BIN_DIR := bin
 
-PROGRAMS := locdiff prodeval safecode
+PROGRAMS := jolt locdiff prodeval safecode
 
+jolt_SRC := $(SRC_DIR)/jolt.c
 locdiff_SRC := $(SRC_DIR)/locdiff.c
 prodeval_SRC := $(SRC_DIR)/prodeval.c
 safecode_SRC := $(SRC_DIR)/safecode.c
