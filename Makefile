@@ -1,15 +1,16 @@
 CC		:= cc
-CFLAGS 	:= -std=c17 -Wall -Wextra -Wpedantic
+CFLAGS 	:= -std=c17 -Wall -Wextra -Wpedantic -O2
 LDFLAGS	:= -lm
 SRC_DIR := src
 BIN_DIR := bin
-
-PROGRAMS := jolt locdiff prodeval safecode
+ 
+PROGRAMS := jolt locdiff prodeval safecode day4
 
 jolt_SRC := $(SRC_DIR)/jolt.c
 locdiff_SRC := $(SRC_DIR)/locdiff.c
 prodeval_SRC := $(SRC_DIR)/prodeval.c
 safecode_SRC := $(SRC_DIR)/safecode.c
+day4_SRC := $(SRC_DIR)/day4.c
 
 BINS := $(addprefix $(BIN_DIR)/, $(PROGRAMS))
 
