@@ -42,10 +42,10 @@ long long get_max_joltage(char* bank, int num_batteries) {
 
     int curr_battery = 0;
 
-    int largest_index = 0;
-    int largest_joltage = 0;
-
     while (curr_battery < num_batteries) {
+        int largest_index = 0;
+        int largest_joltage = 0;
+
         // next loc after previously selected battery
         int first_pos_to_check = curr_battery == 0 ? 0 : battery_pos[curr_battery - 1] + 1;
         int last_pos_to_check = bank_len - num_batteries + curr_battery;
@@ -61,13 +61,13 @@ long long get_max_joltage(char* bank, int num_batteries) {
 
         battery_pos[curr_battery] = largest_index;
         curr_battery++;
-        largest_joltage = 0;
     }
 
 
     long long max_joltage = 0;
     for (int i = 0; i < num_batteries; i++) {
-        max_joltage += (bank[battery_pos[num_batteries - i - 1]] - '0') * pow(10, i);
+        int battery_val = bank[battery_pos[num_batteries - i - 1]] - '0';
+        max_joltage += battery_val * pow(10, i);
     }
 
     return max_joltage;
