@@ -4,13 +4,13 @@ LDFLAGS	:= -lm
 SRC_DIR := src
 BIN_DIR := bin
  
-PROGRAMS := jolt locdiff prodeval safecode day4
+PROGRAMS := jolt locdiff prodeval rolls safecode
 
 jolt_SRC := $(SRC_DIR)/jolt.c
 locdiff_SRC := $(SRC_DIR)/locdiff.c
 prodeval_SRC := $(SRC_DIR)/prodeval.c
 safecode_SRC := $(SRC_DIR)/safecode.c
-day4_SRC := $(SRC_DIR)/day4.c
+rolls_SRC := $(SRC_DIR)/rolls.c
 
 BINS := $(addprefix $(BIN_DIR)/, $(PROGRAMS))
 

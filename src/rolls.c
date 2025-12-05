@@ -1,4 +1,4 @@
-/* jolt -- [AOC 2025 Day 4] 
+/* rolls -- [AOC 2025 Day 4] 
    Copyright (C) 2025 99xtal
 
    This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ void usage(FILE *out, const char *prog) {
     fprintf(out,
         "Usage: %s [OPTION]... [FILE]...\n"
         "\n"
-        "Given a FILE containing a list of battery bank joltages, find the largest possible joltage.\n"
+        "Given a FILE containing a map of paper rolls, count how many can be removed\n"
         "\n"
         "With no FILE, read standard input.\n"
         "\n"
@@ -41,6 +41,13 @@ void free_map(char** map, size_t map_height) {
         free(map[i]);
     }
     free(map);
+}
+
+void free_arr(int* arr, size_t len) {
+    for (size_t i = 0; i < len; i++) {
+        free(arr[i]);
+    }
+    free(arr);
 }
 
 int count_nearby_rolls(char** map, int x, int y, size_t map_width, size_t map_height) {
@@ -72,6 +79,7 @@ long solve(FILE *input) {
     char** map = malloc(capacity * sizeof(char*));
     if (map == NULL) {
         fprintf(stderr, "memory allocation failed\n");
+        return -1;
     }
 
     char* line = NULL;
@@ -100,6 +108,7 @@ long solve(FILE *input) {
         char* map_line = malloc((linelen + 1) * sizeof(char));
         if (map_line == NULL) {
             fprintf(stderr, "memory allocation failed\n");
+            return -1;
         }
         strcpy(map_line, line);
         map[map_height] = map_line;
@@ -108,22 +117,51 @@ long solve(FILE *input) {
         map_width = linelen > map_width ? linelen : map_width;
     }
 
-    long accessible_rolls = 0;
-    for (size_t y = 0; y < map_height; y++) {
-        for (size_t x = 0; x < map_width; x++) {
-            if (map[y][x] == '@') {
-                int nearby = count_nearby_rolls(map, x, y, map_width, map_height);
-                if (nearby < 4) {
-                    accessible_rolls++;
-                }
-                // printf("x: %d, y: %d, count: %d\n", x, y, nearby);
-            }
+    long total_removed = 0;
+
+    while (1) {
+        // initialize array of roll positions to remove after this pass
+        int** removable_roll_pos = malloc(map_width * map_height * sizeof(int*));
+        int removable_len = 0;
+        if (!removable_roll_pos) {
+            fprintf(stderr, "memory allocation failed");
+            return -1;
         }
-    };
+
+        // check current map for removable rolls
+        for (size_t y = 0; y < map_height; y++) {
+            for (size_t x = 0; x < map_width; x++) {
+                if (map[y][x] == '@') {
+                    int nearby = count_nearby_rolls(map, x, y, map_width, map_height);
+                    if (nearby < 4) {
+                        int* pos = malloc(2 * sizeof(int));
+                        pos[0] = x;
+                        pos[1] = y;
+                        removable_roll_pos[removable_len] = pos;
+                        removable_len++;
+                    }
+                }
+            }
+        };
+
+        // remove rolls
+        for (int p = 0; p < removable_len; p++) {
+            int* pos = removable_roll_pos[p];
+            map[pos[1]][pos[0]] = '.';
+        }
+
+        total_removed += removable_len;
+        free(removable_roll_pos);
+
+        if (removable_len == 0) {
+            break;
+        }
+    }
 
     free(line);
     free_map(map, map_height);
-    return accessible_rolls;
+
+    return total_removed;
 }
 
 int main(int argc, char **argv) {
